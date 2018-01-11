@@ -26,7 +26,7 @@ enum ProcessState {
 
 impl PartialEq for ProcessState {
     fn eq(&self, other: &ProcessState) -> bool {
-        self == other
+        self.to_string() == other.to_string()
     }
 }
 
