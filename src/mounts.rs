@@ -2,6 +2,7 @@ use std::fs;
 use std::str;
 use std::io::{BufReader, Read};
 use std::path::Path;
+use std::fmt;
 
 pub static MOUNTS: &str = "/proc/mounts";
 
@@ -49,6 +50,12 @@ impl Mount {
     }
 }
 
+impl fmt::Display for Mount {
+    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmtr, "Device: {} Mount: {}", self.dev, self.mnt)
+    }
+}
+
 impl PartialEq for Mount {
     fn eq(&self, other: &Mount) -> bool {
         (self.dev == other.dev) & (self.mnt == other.mnt) & (self.fs_type == other.fs_type)
@@ -57,6 +64,10 @@ impl PartialEq for Mount {
 }
 
 impl Mounts {
+    pub fn get_mounts(self) -> Vec<Mount> {
+        self.mounts
+    }
+
     pub fn new() -> Mounts {
         let s = Mounts::fetch();
         Mounts::parse(s)
