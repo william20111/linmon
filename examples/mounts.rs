@@ -3,9 +3,9 @@ extern crate linmon;
 use linmon::mounts::{Mount, Mounts};
 
 fn main() {
-    // get running PIDs of whole system
+    // get system mounts
     let ms = Mounts::new();
-    // fetch process state for each PID
+    // fetch
     for m in ms.get_mounts() {
         println!("{}", m)
     }
