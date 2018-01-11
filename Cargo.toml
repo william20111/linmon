@@ -1,0 +1,7 @@
+[package]
+name = "linmon"
+version = "0.1.0"
+authors = ["William Fleming <wfleming@grumpysysadm.com>"]
+
+[dependencies]
+regex = "0.2"

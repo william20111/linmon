@@ -3,5 +3,5 @@
 os:
   - linux
 rust:
-  - stable
+  - nightly
 language: rust
