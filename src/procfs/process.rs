@@ -10,6 +10,70 @@ use std::str::FromStr;
 pub static PROC: &str = "/proc";
 
 #[derive(Debug)]
+struct ProcessMemory {
+    size: i64,
+    resident: i64,
+    share: i64,
+    trs: i64,
+    drs: i64,
+    lrs: i64,
+    dt: i64,
+}
+
+impl PartialEq for ProcessMemory {
+    fn eq(&self, other: &ProcessMemory) -> bool {
+        (self.size == other.size) & (self.resident == other.resident) & (self.share == other.share)
+            & (self.trs == other.trs) & (self.drs == other.drs) & (self.lrs == other.lrs)
+            & (self.dt == other.dt)
+    }
+}
+
+impl fmt::Display for ProcessMemory {
+    fn fmt(&self, fmtr: &mut fmt::Formatter) -> fmt::Result {
+        write!(fmtr, "size: {}", self.size);
+        write!(fmtr, "resident: {}", self.resident);
+        write!(fmtr, "share: {}", self.share);
+        write!(fmtr, "trs: {}", self.trs);
+        write!(fmtr, "drs: {}", self.drs);
+        write!(fmtr, "lrs: {}", self.lrs);
+        write!(fmtr, "dt: {}", self.dt)
+    }
+}
+
+impl ProcessMemory {
+    pub fn new(p: &str) -> ProcessMemory {
+        let s = Process::fetch(p).unwrap();
+        ProcessMemory::parse(s)
+    }
+
+    fn fetch(pid: &str) -> Result<String, io::Error> {
+        let path = format!("/{}/{}/statm", PROC, pid);
+        let mut s = String::new();
+        match fs::File::open(path) {
+            Ok(f) => {
+                let mut buf = io::BufReader::new(f);
+                buf.read_to_string(&mut s).unwrap();
+                Ok(s)
+            }
+            Err(e) => Err(e),
+        }
+    }
+
+    fn parse(s: String) -> ProcessMemory {
+        let store: Vec<&str> = s.split_whitespace().collect();
+        ProcessMemory {
+            size: store[0].parse::<i64>().unwrap(),
+            resident: store[1].parse::<i64>().unwrap(),
+            share: store[2].parse::<i64>().unwrap(),
+            trs: store[3].parse::<i64>().unwrap(),
+            drs: store[4].parse::<i64>().unwrap(),
+            lrs: store[5].parse::<i64>().unwrap(),
+            dt: store[6].parse::<i64>().unwrap(),
+        }
+    }
+}
+
+#[derive(Debug)]
 enum ProcessState {
     Running,
     Sleeping,
@@ -556,4 +620,20 @@ fn test_is_alive() {
 #[should_panic]
 fn test_process_not_found_panic() {
     Process::fetch("100000000").unwrap();
+}
+
+#[test]
+fn parse_statm() {
+    let test_string = "59831 3053 1906 360 0 7404 0";
+    let t = ProcessMemory::parse(test_string.to_string());
+    let pm = ProcessMemory {
+        size: 59831,
+        resident: 3053,
+        share: 1906,
+        trs: 360,
+        drs: 0,
+        lrs: 7404,
+        dt: 0,
+    };
+    assert_eq!(t, pm)
 }
