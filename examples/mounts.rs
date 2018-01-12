@@ -7,6 +7,9 @@ fn main() {
     let ms = Mounts::new();
     // fetch
     for m in ms.get_mounts() {
-        println!("{}", m)
+        match m.get_uuid() {
+            Ok(u) => println!("{}", u),
+            Err(_) => {}
+        }
     }
 }

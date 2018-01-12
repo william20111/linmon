@@ -168,7 +168,7 @@ impl NetStat {
     }
 
     fn parse(ns: String) -> NetStat {
-        let mut splitter: Vec<&str> = ns.split("\n").collect();
+        let splitter: Vec<&str> = ns.split("\n").collect();
         let tcp_values = splitter[1];
         let ip_values = splitter[3];
         let mut tcp_v: Vec<&str> = tcp_values.split(" ").collect();

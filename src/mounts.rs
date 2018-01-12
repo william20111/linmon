@@ -26,8 +26,10 @@ impl Mount {
         split[0] == "ro"
     }
 
-    pub fn get_uuid(&self) -> String {
-        if self.dev.contains("dev") {
+    pub fn get_uuid(&self) -> Result<String, String> {
+        if self.dev.contains("dev") & !self.dev.contains("tmpfs") & !self.dev.contains("pts")
+            & !self.dev.contains("cgroup")
+        {
             for entry in Path::read_dir(Path::new("/dev/disk/by-uuid/")).unwrap() {
                 let e = entry.unwrap().path();
                 let l = Path::read_link(&e).unwrap();
@@ -36,16 +38,16 @@ impl Mount {
                 if l.strip_prefix("../../").unwrap().to_str().unwrap()
                     == dev.unwrap().to_str().unwrap()
                 {
-                    return e.strip_prefix("/dev/disk/by-uuid/")
+                    return Ok(e.strip_prefix("/dev/disk/by-uuid/")
                         .unwrap()
                         .to_str()
                         .unwrap()
-                        .to_string();
+                        .to_string());
                 }
             }
-            return "Not Found".to_string();
+            return Err("Not Found".to_string());
         } else {
-            return "Not Found".to_string();
+            return Err("Not Found".to_string());
         }
     }
 }
@@ -113,11 +115,11 @@ selinuxfs /sys/fs/selinux selinuxfs rw,relatime 0 0
     let m2 = &p.mounts[1];
     let m3 = &p.mounts[2];
     assert_eq!(
-        m1.get_uuid(),
+        m1.get_uuid().unwrap(),
         "46bfd5e8-4a69-4eac-b46b-fcdcce9ee9c9".to_string()
     );
-    assert_eq!(m2.get_uuid(), "4AE7-B622");
-    assert_eq!(m3.get_uuid(), "Not Found");
+    assert_eq!(m2.get_uuid().unwrap(), "4AE7-B622");
+    assert_eq!(m3.get_uuid(), Err("Not Found".to_string()));
 }
 
 #[test]
